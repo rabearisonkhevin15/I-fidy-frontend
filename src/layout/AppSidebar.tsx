@@ -278,38 +278,40 @@ const AppSidebar: React.FC = () => {
     >
       {/* Logo */}
       <div
-        className={`py-8 flex ${
-          !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-        }`}
-      >
-        <Link to="/">
-          {isExpanded || isHovered || isMobileOpen ? (
-            <>
-              <img
-                className="dark:hidden"
-                src="/images/logo/logo.svg"
-                alt="Logo"
-                width={150}
-                height={40}
-              />
-              <img
-                className="hidden dark:block"
-                src="/images/logo/logo-dark.svg"
-                alt="Logo"
-                width={150}
-                height={40}
-              />
-            </>
-          ) : (
-            <img
-              src="/images/logo/logo-icon.svg"
-              alt="Logo"
-              width={32}
-              height={32}
-            />
-          )}
-        </Link>
-      </div>
+  className={`py-8 px-20 flex items-center ${
+    !isExpanded && !isHovered ? "justify-center" : "justify-start"
+
+  }`}
+>
+  <Link to="/">
+    {isExpanded || isHovered || isMobileOpen ? (
+      <>
+        <img
+          className="dark:hidden"
+          src="/images/logo/Logo.png"
+          alt="Logo"
+          width={80}
+          height={20}
+        />
+        <img
+          className="hidden dark:block"
+          src="/images/logo/Logo.png"
+          alt="Logo"
+          width={80}
+          height={20}
+        />
+      </>
+    ) : (
+      <img
+        src="/images/logo/logo-icon.svg"
+        alt="Logo"
+        width={32}
+        height={32}
+      />
+    )}
+  </Link>
+</div>
+
 
       {/* Navigation */}
       <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">

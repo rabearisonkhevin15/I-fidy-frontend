@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
-import EditElecteurModal from "../components/crudElecteurs/EditElecteurModal";
 import AddElecteurModal from "../components/crudElecteurs/AddElecteurModal";
+import EditElecteurModal from "../components/crudElecteurs/EditElecteurModal";
 
 interface Electeur {
-  id?: number;
+  id: number;
   nom: string;
   email: string;
   arrondissement: string;
@@ -12,215 +12,144 @@ interface Electeur {
 }
 
 const Electeurs: React.FC = () => {
-  const [electeurs, setElecteurs] = useState<Electeur[]>([
-    {
-      id: 1,
-      nom: "Jean Randri",
-      email: "jean@email.com",
-      arrondissement: "IV",
-      photo: "https://via.placeholder.com/40",
-    },
-  ]);
+  const [electeurs, setElecteurs] = useState<Electeur[]>([]);
+  const [selectedElecteur, setSelectedElecteur] = useState<Electeur | null>(null);
 
-  // Modals
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const [selectedElecteur, setSelectedElecteur] = useState<Electeur | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [newElecteur, setNewElecteur] = useState<Electeur>({
-    nom: "",
-    email: "",
-    arrondissement: "",
-    photo: "",
-  });
-  const [newSelectedFile, setNewSelectedFile] = useState<File | null>(null);
-
-  // --- ÉDITION ---
-  const handleEditClick = (electeur: Electeur) => {
-    setSelectedElecteur(electeur);
-    setIsEditModalOpen(true);
+  const handleAdd = (electeur: Omit<Electeur, "id">) => {
+    const newElecteur: Electeur = {
+      ...electeur,
+      id: Date.now(),
+    };
+    setElecteurs((prev) => [...prev, newElecteur]);
+    setIsAddModalOpen(false);
   };
 
-  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!selectedElecteur) return;
-    setSelectedElecteur({ ...selectedElecteur, [e.target.name]: e.target.value });
-  };
-
-  const handleEditFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!selectedElecteur) return;
-    if (e.target.files?.[0]) {
-      setSelectedFile(e.target.files[0]);
-      const reader = new FileReader();
-      reader.onload = () =>
-        setSelectedElecteur((prev) =>
-          prev ? { ...prev, photo: reader.result as string } : null
-        );
-      reader.readAsDataURL(e.target.files[0]);
-    }
-  };
-
-  const handleSave = async () => {
-    // Appel API PUT ici...
+  const handleEdit = (updatedElecteur: Electeur) => {
+    setElecteurs((prev) =>
+      prev.map((e) => (e.id === updatedElecteur.id ? updatedElecteur : e))
+    );
     setIsEditModalOpen(false);
   };
 
-  // --- AJOUT ---
-  const openAddModal = () => setIsAddModalOpen(true);
-  const closeAddModal = () => {
-    setIsAddModalOpen(false);
-    setNewSelectedFile(null);
-    setNewElecteur({ nom: "", email: "", arrondissement: "", photo: "" });
-  };
-
-  const handleAddChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewElecteur({ ...newElecteur, [e.target.name]: e.target.value });
-  };
-
-  const handleAddFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      setNewSelectedFile(e.target.files[0]);
-      const reader = new FileReader();
-      reader.onload = () =>
-        setNewElecteur((prev) => ({ ...prev, photo: reader.result as string }));
-      reader.readAsDataURL(e.target.files[0]);
-    }
-  };
-
-  const handleAdd = async () => {
-    // API POST
-    closeAddModal();
-  };
-
-  // --- SUPPRESSION ---
-  const handleDeleteClick = (electeur: Electeur) => {
-    setSelectedElecteur(electeur);
-    setIsDeleteModalOpen(true);
-  };
-
-  const confirmDelete = async () => {
-    if (!selectedElecteur?.id) return;
-    try {
-      await fetch(`http://localhost:8000/api/electeurs/${selectedElecteur.id}/`, {
-        method: "DELETE",
-      });
+  const handleDelete = () => {
+    if (selectedElecteur) {
       setElecteurs((prev) => prev.filter((e) => e.id !== selectedElecteur.id));
-    } catch (err) {
-      console.error("Erreur suppression:", err);
-    } finally {
-      setIsDeleteModalOpen(false);
     }
-  };
-
-  const cancelDelete = () => {
     setIsDeleteModalOpen(false);
     setSelectedElecteur(null);
   };
 
   return (
-    <div className="p-6 bg-white dark:bg-gray-900 min-h-screen">
-      <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
-        Liste des électeurs
-      </h1>
+    <div className="p-6 min-h-screen bg-white text-gray-800 dark:bg-gray-900 dark:text-white transition-colors duration-300">
+      <h1 className="text-3xl font-bold mb-6 text-center">Liste des électeurs</h1>
 
       <div className="flex justify-end mb-4">
         <button
-          onClick={openAddModal}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow text-sm font-medium transition"
+          onClick={() => setIsAddModalOpen(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow transition-all"
         >
-          + Ajouter un nouvel électeur
+          + Ajouter un électeur
         </button>
       </div>
 
-      {/* TABLEAU */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full border border-gray-200 dark:border-gray-700 rounded-lg shadow">
-          <thead>
-            <tr className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 uppercase text-sm">
-              <th className="px-6 py-3 text-left">Photo</th>
-              <th className="px-6 py-3 text-left">Nom & Prénom</th>
-              <th className="px-6 py-3 text-left">Email</th>
-              <th className="px-6 py-3 text-left">Arrondissement</th>
-              <th className="px-6 py-3 text-left">Actions</th>
+      <div className="overflow-x-auto rounded-lg shadow-md">
+        <table className="min-w-full text-sm divide-y divide-gray-200 dark:divide-gray-700">
+          <thead className="bg-gray-100 dark:bg-gray-800">
+            <tr>
+              <th className="px-6 py-3 text-left font-medium">Photo</th>
+              <th className="px-6 py-3 text-left font-medium">Nom</th>
+              <th className="px-6 py-3 text-left font-medium">Email</th>
+              <th className="px-6 py-3 text-left font-medium">Arrondissement</th>
+              <th className="px-6 py-3 text-left font-medium">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
             {electeurs.map((e) => (
-              <tr key={e.id} className="border-t border-gray-200 dark:border-gray-700">
+              <tr key={e.id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                 <td className="px-6 py-4">
                   <img
                     src={e.photo || "https://via.placeholder.com/40"}
-                    alt="Photo"
-                    className="w-10 h-10 rounded-full object-cover"
+                    alt="avatar"
+                    className="w-10 h-10 rounded-full object-cover border"
                   />
                 </td>
-                <td className="px-6 py-4 text-gray-800 dark:text-white">{e.nom}</td>
-                <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{e.email}</td>
-                <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{e.arrondissement}</td>
-                <td className="px-6 py-4 space-x-4">
+                <td className="px-6 py-4">{e.nom}</td>
+                <td className="px-6 py-4">{e.email}</td>
+                <td className="px-6 py-4">{e.arrondissement}</td>
+                <td className="px-6 py-4 flex items-center gap-3">
                   <button
-                    className="text-blue-600 hover:text-blue-800"
-                    onClick={() => handleEditClick(e)}
+                    onClick={() => {
+                      setSelectedElecteur(e);
+                      setIsEditModalOpen(true);
+                    }}
+                    className="text-blue-500 hover:text-blue-700 transition"
                   >
                     <FaEdit />
                   </button>
                   <button
-                    className="text-red-600 hover:text-red-800"
-                    onClick={() => handleDeleteClick(e)}
+                    onClick={() => {
+                      setSelectedElecteur(e);
+                      setIsDeleteModalOpen(true);
+                    }}
+                    className="text-red-500 hover:text-red-700 transition"
                   >
                     <FaTrash />
                   </button>
                 </td>
               </tr>
             ))}
+            {electeurs.length === 0 && (
+              <tr>
+                <td colSpan={5} className="text-center py-6 text-gray-500 dark:text-gray-400">
+                  Aucun électeur enregistré.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
 
-      {/* MODALS */}
+      {/* Modal - Ajouter */}
+      <AddElecteurModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onAdd={handleAdd}
+      />
+
+      {/* Modal - Modifier */}
       {selectedElecteur && (
         <EditElecteurModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
           electeur={selectedElecteur}
-          onChange={handleEditChange}
-          onFileChange={handleEditFileChange}
-          onSave={handleSave}
+          onSave={handleEdit}
         />
       )}
 
-      <AddElecteurModal
-        isOpen={isAddModalOpen}
-        onClose={closeAddModal}
-        electeur={newElecteur}
-        onChange={handleAddChange}
-        onFileChange={handleAddFileChange}
-        onAdd={handleAdd}
-      />
-
-      {/* MODAL SUPPRESSION */}
+      {/* Modal - Supprimer */}
       {isDeleteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md">
-            <h2 className="text-lg font-bold mb-4 dark:text-white">
-              Confirmer la suppression
-            </h2>
-            <p className="mb-6 text-gray-700 dark:text-gray-300">
-              Voulez-vous vraiment supprimer cet électeur ?
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md animate-fade-in">
+            <h2 className="text-lg font-semibold mb-4">Supprimer l’électeur</h2>
+            <p className="mb-6 text-sm text-gray-600 dark:text-gray-300">
+              Êtes-vous sûr de vouloir supprimer cet électeur ?
             </p>
-            <div className="flex justify-end space-x-4">
+            <div className="flex justify-end gap-4">
               <button
-                onClick={cancelDelete}
-                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded"
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="px-4 py-2 bg-gray-300 dark:bg-gray-700 rounded hover:bg-gray-400 dark:hover:bg-gray-600"
               >
-                Non
+                Annuler
               </button>
               <button
-                onClick={confirmDelete}
-                className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded"
+                onClick={handleDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
               >
-                Oui, supprimer
+                Supprimer
               </button>
             </div>
           </div>

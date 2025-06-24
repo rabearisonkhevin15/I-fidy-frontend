@@ -1,107 +1,80 @@
-import React from "react";
+import React, { useState } from "react";
 
-interface Electeur {
-  nom: string;
-  email: string;
-  arrondissement: string;
-  photo?: string;
-}
-
-interface AddElecteurModalProps {
+interface Props {
   isOpen: boolean;
   onClose: () => void;
-  electeur: Electeur;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onAdd: () => void;
+  onAdd: (electeur: {
+    nom: string;
+    email: string;
+    arrondissement: string;
+    photo?: string;
+  }) => void;
 }
 
-const AddElecteurModal: React.FC<AddElecteurModalProps> = ({
-  isOpen,
-  onClose,
-  electeur,
-  onChange,
-  onFileChange,
-  onAdd,
-}) => {
+const AddElecteurModal: React.FC<Props> = ({ isOpen, onClose, onAdd }) => {
+  const [form, setForm] = useState({
+    nom: "",
+    email: "",
+    arrondissement: "",
+    photo: "",
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = () => {
+    onAdd(form);
+    setForm({ nom: "", email: "", arrondissement: "", photo: "" });
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="max-w-[700px] w-full m-4 bg-white dark:bg-gray-900 rounded-3xl p-6 overflow-y-auto">
-        <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white">
-          Ajouter un nouvel électeur
-        </h4>
-        <form className="flex flex-col">
-          <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-            <div>
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Photo</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={onFileChange}
-                className="w-full p-2 mt-1 border rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-              />
-              {electeur.photo && (
-                <img
-                  src={electeur.photo}
-                  alt="Photo preview"
-                  className="w-20 h-20 rounded-full object-cover mt-2"
-                />
-              )}
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Nom & Prénom</label>
-              <input
-                type="text"
-                name="nom"
-                value={electeur.nom}
-                onChange={onChange}
-                className="w-full p-2 mt-1 border rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
-              <input
-                type="email"
-                name="email"
-                value={electeur.email}
-                onChange={onChange}
-                className="w-full p-2 mt-1 border rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Arrondissement</label>
-              <input
-                type="text"
-                name="arrondissement"
-                value={electeur.arrondissement}
-                onChange={onChange}
-                className="w-full p-2 mt-1 border rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 mt-6 lg:justify-end">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border rounded text-sm dark:text-white hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-800"
-            >
-              Annuler
-            </button>
-            <button
-              type="button"
-              onClick={onAdd}
-              className="px-4 py-2 text-white bg-green-600 rounded text-sm hover:bg-green-700"
-            >
-              Ajouter
-            </button>
-          </div>
-        </form>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+      <div className="bg-white dark:bg-gray-900 p-6 rounded-lg w-full max-w-md shadow-lg animate-fade-in">
+        <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-white">
+          Ajouter un électeur
+        </h2>
+        <input
+          className="w-full mb-3 p-2 border rounded bg-white dark:bg-gray-800 text-gray-800 dark:text-white"
+          name="nom"
+          placeholder="Nom"
+          value={form.nom}
+          onChange={handleChange}
+        />
+        <input
+          className="w-full mb-3 p-2 border rounded bg-white dark:bg-gray-800 text-gray-800 dark:text-white"
+          name="email"
+          placeholder="Email"
+          value={form.email}
+          onChange={handleChange}
+        />
+        <input
+          className="w-full mb-3 p-2 border rounded bg-white dark:bg-gray-800 text-gray-800 dark:text-white"
+          name="arrondissement"
+          placeholder="Arrondissement"
+          value={form.arrondissement}
+          onChange={handleChange}
+        />
+        <input
+          className="w-full mb-3 p-2 border rounded bg-white dark:bg-gray-800 text-gray-800 dark:text-white"
+          name="photo"
+          placeholder="URL photo (optionnel)"
+          value={form.photo}
+          onChange={handleChange}
+        />
+        <div className="flex justify-end gap-4 mt-4">
+          <button onClick={onClose} className="bg-gray-300 dark:bg-gray-700 px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-600 transition">
+            Annuler
+          </button>
+          <button
+            onClick={handleSubmit}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+          >
+            Ajouter
+          </button>
+        </div>
       </div>
     </div>
   );
